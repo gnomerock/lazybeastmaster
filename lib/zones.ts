@@ -45,5 +45,7 @@ export const REGION_ORDER = ["La Noscea", "Black Shroud", "Thanalan", "Mor Dhona
 /** Maps a zone name to its downloaded map image under /public/maps. */
 export function zoneMapImage(zone: string): string {
   const slug = zone.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-  return `/maps/${slug}.jpg`;
+  // Plain <img> tags don't get Next's automatic basePath rewriting, so it's
+  // prepended by hand here (see next.config.ts).
+  return `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/maps/${slug}.jpg`;
 }
