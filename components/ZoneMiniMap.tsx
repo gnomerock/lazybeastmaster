@@ -2,13 +2,7 @@
 
 import { useRef } from "react";
 import type { Monster, MapPin } from "@/lib/types";
-
-const CONFIDENCE_STYLE: Record<MapPin["confidence"], string> = {
-  confirmed: "bg-emerald-400 ring-emerald-200",
-  common: "bg-sky-400 ring-sky-200",
-  approx: "bg-amber-400 ring-amber-200",
-  user: "bg-fuchsia-400 ring-fuchsia-200",
-};
+import { zoneMapImage } from "@/lib/zones";
 
 const CONFIDENCE_LABEL: Record<MapPin["confidence"], string> = {
   confirmed: "confirmed spawn",
@@ -18,6 +12,20 @@ const CONFIDENCE_LABEL: Record<MapPin["confidence"], string> = {
 };
 
 const MAP_SCALE = 42;
+// The downloaded map images have a decorative frame before the coordinate
+// grid starts; this inset (as a fraction of image size) keeps pins aligned
+// with the in-game grid instead of drifting into the frame near the edges.
+const MAP_INSET = 0.025;
+
+function coordToPercent(v: number): number {
+  const t = (v - 1) / (MAP_SCALE - 1);
+  return (MAP_INSET + t * (1 - 2 * MAP_INSET)) * 100;
+}
+
+function percentToCoord(t: number): number {
+  const raw = (t - MAP_INSET) / (1 - 2 * MAP_INSET);
+  return 1 + raw * (MAP_SCALE - 1);
+}
 
 export function ZoneMiniMap({
   zone,
@@ -43,8 +51,8 @@ export function ZoneMiniMap({
     const rect = mapRef.current.getBoundingClientRect();
     const relX = (e.clientX - rect.left) / rect.width;
     const relY = (e.clientY - rect.top) / rect.height;
-    const x = Math.round(relX * MAP_SCALE * 10) / 10;
-    const y = Math.round(relY * MAP_SCALE * 10) / 10;
+    const x = Math.round(percentToCoord(relX) * 10) / 10;
+    const y = Math.round(percentToCoord(relY) * 10) / 10;
     onSetPin(armedMonsterId, x, y);
     onArm(null);
   }
@@ -54,19 +62,18 @@ export function ZoneMiniMap({
       <div
         ref={mapRef}
         onClick={handleMapClick}
-        className={`relative aspect-square w-full sm:w-48 shrink-0 rounded-md border border-slate-700 bg-slate-950 overflow-hidden ${
+        className={`relative aspect-square w-full sm:w-64 shrink-0 rounded-md border border-slate-700 overflow-hidden bg-slate-950 ${
           armedMonsterId !== null ? "cursor-crosshair ring-2 ring-amber-400" : ""
         }`}
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, rgba(148,163,184,0.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,0.15) 1px, transparent 1px)",
-          backgroundSize: "12.5% 12.5%",
-        }}
         title={armedMonsterId !== null ? "Click where you found it" : undefined}
       >
-        <span className="absolute top-1 left-1.5 text-[10px] uppercase tracking-wide text-slate-500">
-          {zone}
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={zoneMapImage(zone)}
+          alt={`${zone} map`}
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
+        />
         {monsters.map((m) => {
           const pin = pins[m.id];
           if (!pin) return null;
@@ -79,8 +86,8 @@ export function ZoneMiniMap({
                 onArm(armedMonsterId === m.id ? null : m.id);
               }}
               title={`${m.name} (${CONFIDENCE_LABEL[pin.confidence]})`}
-              className={`absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ${CONFIDENCE_STYLE[pin.confidence]}`}
-              style={{ left: `${(pin.x / MAP_SCALE) * 100}%`, top: `${(pin.y / MAP_SCALE) * 100}%` }}
+              className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600 ring-2 ring-white shadow-[0_0_0_1px_rgba(0,0,0,0.6)] hover:scale-125 transition-transform"
+              style={{ left: `${coordToPercent(pin.x)}%`, top: `${coordToPercent(pin.y)}%` }}
             />
           );
         })}
@@ -93,9 +100,7 @@ export function ZoneMiniMap({
           return (
             <li key={m.id} className="flex items-center gap-2">
               <span
-                className={`h-2 w-2 rounded-full shrink-0 ${
-                  pin ? CONFIDENCE_STYLE[pin.confidence].split(" ")[0] : "bg-slate-700"
-                }`}
+                className={`h-2 w-2 rounded-full shrink-0 ${pin ? "bg-red-600" : "bg-slate-700"}`}
               />
               <span className="text-slate-200 flex-1 truncate">{m.name}</span>
               {pin && (

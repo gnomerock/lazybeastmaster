@@ -41,3 +41,9 @@ export const ZONE_GRAPH: Record<string, string[]> = Object.fromEntries(
 );
 
 export const REGION_ORDER = ["La Noscea", "Black Shroud", "Thanalan", "Mor Dhona", "Coerthas"];
+
+/** Maps a zone name to its downloaded map image under /public/maps. */
+export function zoneMapImage(zone: string): string {
+  const slug = zone.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  return `/maps/${slug}.jpg`;
+}
