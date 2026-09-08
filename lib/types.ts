@@ -19,6 +19,10 @@ export interface Monster {
   verifiedZone?: string;
   /** Explanation shown to the user when verifiedZone corrects/annotates zone. */
   zoneNote?: string;
+  /** In-game level of the monster (or its spawn matching `pin`/`verifiedZone`), where confidently identified. */
+  level?: number;
+  /** Explanation when `level` is an estimate across a wide range or ambiguous species variant. */
+  levelNote?: string;
   /**
    * "overworld": routable, huntable in the field.
    * "dungeon": behind a duty/instance queue, tracked but excluded from routing.

@@ -102,7 +102,12 @@ export function ZoneMiniMap({
               <span
                 className={`h-2 w-2 rounded-full shrink-0 ${pin ? "bg-red-600" : "bg-slate-700"}`}
               />
-              <span className="text-slate-200 flex-1 truncate">{m.name}</span>
+              <span className="text-slate-200 flex-1 truncate">
+                {m.name}
+                {m.level !== undefined && (
+                  <span className="ml-1.5 text-[11px] text-slate-500">Lv. {m.level}</span>
+                )}
+              </span>
               {pin && (
                 <span className="text-[11px] tabular-nums text-slate-500">
                   ({pin.x}, {pin.y})

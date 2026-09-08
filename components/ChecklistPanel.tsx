@@ -54,6 +54,16 @@ function ZoneGroup({
                   >
                     {m.name}
                   </span>
+                  {m.level !== undefined && (
+                    <span
+                      title={m.levelNote}
+                      className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-full border border-slate-700 text-slate-400 align-middle ${
+                        m.levelNote ? "cursor-help" : ""
+                      }`}
+                    >
+                      Lv. {m.level}
+                    </span>
+                  )}
                   {corrected && (
                     <span
                       title={m.zoneNote}
